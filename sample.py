@@ -23,7 +23,7 @@ def generate_seq(model, mapping, seq_length, seed_text, n_chars):
     return in_text
 
 
-model_name = 'test_network_070819_1920'
+model_name = 'test-run'
 sample_len = 2000
 sample_start = 'on auomating myself'
 
