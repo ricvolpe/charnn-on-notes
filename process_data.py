@@ -1,17 +1,19 @@
+import os
+
 def load_doc(filename):
 	with open(filename, 'r') as f_in:
 		text = f_in.read()
 	return text
 
 DATA_CHOICES = {
-	'naive_test': 'rhyme.txt',
+	'naive_test': 'data/rhyme.txt',
 	'look_alike_test': '/Users/Ric/_personal/_personal_data/mac-notes/personal_notes_test_data.txt',
 	'personal_notes': '/Users/Ric/_personal/_personal_data/mac-notes/all_my_personal_notes.txt'
 }
 
 #enc_text = raw_text.encode('latin1', 'ignore').decode()
 
-raw_text = load_doc(DATA_CHOICES['look_alike_test'])
+raw_text = load_doc(DATA_CHOICES['naive_test'])
 tokens = raw_text.split()
 raw_text = ' '.join(tokens).lower()
 
@@ -26,5 +28,5 @@ def save_doc(lines, filename):
 	with open(filename, 'w') as f_out:
 		f_out.write(data)
 
-out_filename = 'char_sequences.txt'
+out_filename = os.path.join('data', 'char_sequences.txt')
 save_doc(sequences, out_filename)

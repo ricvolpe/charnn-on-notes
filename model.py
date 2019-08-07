@@ -48,27 +48,27 @@ def build_network(input_shape, output_size, params, model_name):
 	model.add(Dense(1024))
 	model.add(Dense(output_size, activation='softmax'))
 	model.compile(loss=params['loss'], optimizer=params['optimizer'], metrics=params['metrics'])
-	if not os.path.isdir(model_name):
-		os.makedirs(model_name)
-	with open(os.path.join(model_name, 'model_summary.txt'), 'w') as f:
+	if not os.path.isdir(os.path.join('data', model_name)):
+		os.makedirs(os.path.join('data', model_name))
+	with open(os.path.join('data', model_name, 'model_summary.txt'), 'w') as f:
 		with redirect_stdout(f):
 			model.summary()
 	return model
 
 def save_model(model, results, params, name):
-	if not os.path.isdir(name):
-		os.makedirs(name)
-	model.save(os.path.join(name,'model.h5'))
-	pickle.dump(mapping, open(os.path.join(name, 'mapping.pkl'), 'wb'))
-	with open(os.path.join(name, 'training_history.json'), 'w') as json_out:
+	if not os.path.isdir(os.path.join('data', name)):
+		os.makedirs(os.path.join('data', name))
+	model.save(os.path.join('data', name, 'model.h5'))
+	pickle.dump(mapping, open(os.path.join('data', name, 'mapping.pkl'), 'wb'))
+	with open(os.path.join('data', name, 'training_history.json'), 'w') as json_out:
 		json.dump(results.history, json_out, indent=2)
-	with open(os.path.join(name, 'params.json'), 'w') as json_out:
+	with open(os.path.join('data', name, 'params.json'), 'w') as json_out:
 		json.dump(params, json_out, indent=2)
 
 # Parameters
 hyperp = {}
-in_filename = 'char_sequences.txt'
-model_name = 'test_network_look_alike_070819_1900'
+in_filename = os.path.join('data', 'char_sequences.txt')
+model_name = 'test_network_070819_1920'
 hyperp['loss'] = 'categorical_crossentropy'
 hyperp['optimizer'] = 'adam'
 hyperp['metrics'] = ['accuracy']

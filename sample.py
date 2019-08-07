@@ -23,13 +23,14 @@ def generate_seq(model, mapping, seq_length, seed_text, n_chars):
     return in_text
 
 
-model_name = 'test_network_look_alike_070819_1900'
+model_name = 'test_network_070819_1920'
 sample_len = 2000
 sample_start = 'on auomating myself'
 
-model = load_model(os.path.join(model_name, 'model.h5'))
-mapping = load(open(os.path.join(model_name,'mapping.pkl'), 'rb'))
-with open(os.path.join(model_name, 'params.json'), 'r') as p_in:
+model_path = os.path.join('data', model_name)
+model = load_model(os.path.join(model_path, 'model.h5'))
+mapping = load(open(os.path.join(model_path,'mapping.pkl'), 'rb'))
+with open(os.path.join(model_path, 'params.json'), 'r') as p_in:
     params = json.load(p_in)
 
 sample = generate_seq(model, mapping, params['sequence_lenght'], sample_start, sample_len)
