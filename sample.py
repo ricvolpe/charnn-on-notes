@@ -23,9 +23,9 @@ def generate_seq(model, mapping, seq_length, seed_text, n_chars):
     return in_text
 
 
-model_name = 'test-run'
+model_name = 'test_network_look_alike_100819_2230'
 sample_len = 2000
-sample_start = 'on auomating myself'
+sample_start = 'on automating myself'
 
 model_path = os.path.join('data', model_name)
 model = load_model(os.path.join(model_path, 'model.h5'))
