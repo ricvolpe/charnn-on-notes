@@ -1,9 +1,8 @@
 import numpy
 from numpy import array
 from keras.utils import to_categorical
-import keras.backend as K
 from keras.models import Sequential
-from keras.layers import Dense, GRU, Dropout, Activation, TimeDistributed
+from keras.layers import LSTM, Dropout, Activation, Dense
 from keras.optimizers import RMSprop
 import pickle
 import warnings
@@ -48,10 +47,8 @@ def one_hot_encoding(X, y, no_of_cat):
 
 def build_network(params, model_name):
 	model = Sequential()
-	model.add(GRU(512, return_sequences=True, input_shape=(params['sequence_lenght'], params['vocabulary_size'])))
-	model.add(Dropout(0.2))
-	model.add(GRU(512, return_sequences=False))
-	model.add(Dropout(0.2))
+	model.add(LSTM(128, return_sequences=False, input_shape=(params['sequence_lenght'], params['vocabulary_size'])))
+	model.add(Dense(1024))
 	model.add(Dense(params['vocabulary_size']))
 	model.add(Activation('softmax'))
 	model.compile(loss=params['loss'], optimizer=params['optimizer'], metrics=params['metrics'])
@@ -85,14 +82,14 @@ def save_model(model, results, params, name):
 # Parameters
 hyperp = {}
 in_filename = os.path.join('data', 'char_sequences.txt')
-model_name = 'notes_network_100819_2230'
+model_name = 'notes_network_100819_2300'
 hyperp['loss'] = 'categorical_crossentropy'
 hyperp['optimizer'] = 'adam'
 hyperp['metrics'] = ['accuracy']
 hyperp['training_percentage'] = 0.95
 assert 0 < hyperp['training_percentage'] < 1, 'Training percentage must be value between 0 and 1'
 hyperp['epochs'] = 5
-hyperp['batch_size'] = 2 ** 16
+hyperp['batch_size'] = 2 ** 8
 hyperp['random_seed'] = 1
 
 # Execution

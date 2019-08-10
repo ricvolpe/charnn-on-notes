@@ -23,8 +23,8 @@ def generate_seq(model, mapping, seq_length, seed_text, n_chars):
     return in_text
 
 
-model_name = 'test_network_look_alike_100819_2230'
-sample_len = 2000
+model_name = 'notes_network_100819_2300'
+sample_len = 150
 sample_start = 'on automating myself'
 
 model_path = os.path.join('data', model_name)
