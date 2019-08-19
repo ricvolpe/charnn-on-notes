@@ -3,6 +3,7 @@ from numpy import array
 from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.layers import LSTM, Dropout, Activation, Dense
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import RMSprop
 import pickle
 import warnings
@@ -47,10 +48,11 @@ def one_hot_encoding(X, y, no_of_cat):
 
 def build_network(params, model_name):
 	model = Sequential()
-	model.add(LSTM(128, return_sequences=False, input_shape=(params['sequence_lenght'], params['vocabulary_size'])))
-	model.add(Dense(1024))
-	model.add(Dense(params['vocabulary_size']))
-	model.add(Activation('softmax'))
+	model.add(LSTM(2 ** 9, return_sequences=True, input_shape=(params['sequence_lenght'], params['vocabulary_size'])))
+	model.add(Dropout(0.5))
+	model.add(LSTM(2 ** 9, return_sequences=False))
+	model.add(Dropout(0.5))
+	model.add(Dense(params['vocabulary_size'], activation='softmax'))
 	model.compile(loss=params['loss'], optimizer=params['optimizer'], metrics=params['metrics'])
 	if not os.path.isdir(os.path.join('data', model_name)):
 		os.makedirs(os.path.join('data', model_name))
@@ -82,15 +84,16 @@ def save_model(model, results, params, name):
 # Parameters
 hyperp = {}
 in_filename = os.path.join('data', 'char_sequences.txt')
-model_name = 'notes_network_100819_2300'
+model_name = 'test_network_look_alike_190819_1710'
 hyperp['loss'] = 'categorical_crossentropy'
 hyperp['optimizer'] = 'adam'
 hyperp['metrics'] = ['accuracy']
-hyperp['training_percentage'] = 0.95
+hyperp['training_percentage'] = 0.6
 assert 0 < hyperp['training_percentage'] < 1, 'Training percentage must be value between 0 and 1'
-hyperp['epochs'] = 5
-hyperp['batch_size'] = 2 ** 8
+hyperp['epochs'] = 500
+hyperp['batch_size'] = 100
 hyperp['random_seed'] = 1
+hyperp['patience'] = 10
 
 # Execution
 numpy.random.seed(hyperp['random_seed'])
@@ -102,12 +105,17 @@ hyperp['sequence_lenght'] = len(seqs[0]) - 1
 
 X_train, y_train, X_test, y_test = train_test_split(seqs, hyperp['training_percentage'])
 X_train, y_train = one_hot_encoding(X_train, y_train, vocab_size)
-char_rnn = build_network(hyperp, model_name)
-results = char_rnn.fit(X_train, y_train, epochs=hyperp['epochs'], verbose=1, batch_size=hyperp['batch_size'])
-
 X_test, y_test = one_hot_encoding(X_test, y_test, vocab_size)
-hyperp['perplexity'] = {
-	'training': perplexity(model_probability(X_train, y_train, char_rnn)),
-	'test': perplexity(model_probability(X_test, y_test, char_rnn))}
+
+char_rnn = build_network(hyperp, model_name)
+early_stopper = EarlyStopping(patience=hyperp['patience'], verbose=1)
+check_point_path = os.path.join(os.path.join('data', model_name, 'model.h5'))
+check_pointer = ModelCheckpoint(check_point_path, verbose=1, save_best_only=True)
+results = char_rnn.fit(X_train, y_train, epochs=hyperp['epochs'], verbose=1, batch_size=hyperp['batch_size'],
+	validation_data=[X_test, y_test], callbacks=[early_stopper, check_pointer])
+
+# hyperp['perplexity'] = {
+# 	'training': perplexity(model_probability(X_train, y_train, char_rnn)),
+# 	'test': perplexity(model_probability(X_test, y_test, char_rnn))}
 
 save_model(char_rnn, results, hyperp, model_name)

@@ -23,7 +23,7 @@ def generate_seq(model, mapping, seq_length, seed_text, n_chars):
     return in_text
 
 
-model_name = 'notes_network_160819_2130'
+model_name = 'test_network_look_alike_190819_1700'
 sample_len = 500
 sample_start = 'this is about'
 
@@ -36,3 +36,6 @@ with open(os.path.join(model_path, 'params.json'), 'r') as p_in:
 sample = generate_seq(model, mapping, params['sequence_lenght'], sample_start, sample_len)
 print('\n', 15 * '-', 'Sample starting here')
 print(sample)
+
+with open(os.path.join(model_path, 'sample.txt'), 'w') as s_out:
+    s_out.write(sample)
