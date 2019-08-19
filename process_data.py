@@ -11,7 +11,7 @@ DATA_CHOICES = {
 	'personal_notes': '/Users/Ric/_personal/_personal_data/mac-notes/all_my_personal_notes.txt'
 }
 
-raw_text = load_doc(DATA_CHOICES['personal_notes'])
+raw_text = load_doc(DATA_CHOICES['naive_test'])
 tokens = raw_text.split()
 raw_text = ' '.join(tokens).lower()
 
