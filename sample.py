@@ -85,9 +85,9 @@ def stochastic_beam_generator(model, mapping, seq_length, seed_text, n_chars, k 
 
     return ''.join(output)
 
-model_name = 'notes_network_160819_2130'
-sample_len = 1000
-sample_start = 'this is about'
+model_name = 'test_network_look_alike_220819_1650'
+sample_len = 500
+sample_start = 'how are you today?'
 
 model_path = os.path.join('data', model_name)
 model = load_model(os.path.join(model_path, 'model.h5'))
@@ -95,9 +95,9 @@ mapping = load(open(os.path.join(model_path,'mapping.pkl'), 'rb'))
 with open(os.path.join(model_path, 'params.json'), 'r') as p_in:
     params = json.load(p_in)
 
-greedy = False
-sampling = False
-beam = False
+greedy = True
+sampling = True
+beam = True
 sampling_beam = True
 
 if greedy:

@@ -49,9 +49,9 @@ def one_hot_encoding(X, y, no_of_cat):
 def build_network(params, model_name):
 	model = Sequential()
 	model.add(LSTM(2 ** 9, return_sequences=True, input_shape=(params['sequence_lenght'], params['vocabulary_size'])))
-	model.add(Dropout(0.5))
+	model.add(Dropout(0.4))
 	model.add(LSTM(2 ** 9, return_sequences=False))
-	model.add(Dropout(0.5))
+	model.add(Dropout(0.4))
 	model.add(Dense(params['vocabulary_size'], activation='softmax'))
 	model.compile(loss=params['loss'], optimizer=params['optimizer'], metrics=params['metrics'])
 	if not os.path.isdir(os.path.join('data', model_name)):
@@ -60,15 +60,6 @@ def build_network(params, model_name):
 		with redirect_stdout(f):
 			print(model.summary())
 	return model
-
-def model_probability(X, y, model):
-	predictions = model.predict(X)
-	true_mask = y.astype(bool)
-	return predictions[true_mask]
-
-def perplexity(distribution):
-	entropy = - numpy.sum(numpy.log(distribution) / len(distribution))
-	return numpy.power(2, entropy)
 
 def save_model(model, results, params, name):
 	if not os.path.isdir(os.path.join('data', name)):
@@ -84,13 +75,13 @@ def save_model(model, results, params, name):
 # Parameters
 hyperp = {}
 in_filename = os.path.join('data', 'char_sequences.txt')
-model_name = 'test_network_look_alike_190819_1710'
+model_name = 'test_network_look_alike_220819_1650'
 hyperp['loss'] = 'categorical_crossentropy'
 hyperp['optimizer'] = 'adam'
 hyperp['metrics'] = ['accuracy']
-hyperp['training_percentage'] = 0.6
+hyperp['training_percentage'] = 0.7
 assert 0 < hyperp['training_percentage'] < 1, 'Training percentage must be value between 0 and 1'
-hyperp['epochs'] = 500
+hyperp['epochs'] = 300
 hyperp['batch_size'] = 100
 hyperp['random_seed'] = 1
 hyperp['patience'] = 10
@@ -113,9 +104,5 @@ check_point_path = os.path.join(os.path.join('data', model_name, 'model.h5'))
 check_pointer = ModelCheckpoint(check_point_path, verbose=1, save_best_only=True)
 results = char_rnn.fit(X_train, y_train, epochs=hyperp['epochs'], verbose=1, batch_size=hyperp['batch_size'],
 	validation_data=[X_test, y_test], callbacks=[early_stopper, check_pointer])
-
-# hyperp['perplexity'] = {
-# 	'training': perplexity(model_probability(X_train, y_train, char_rnn)),
-# 	'test': perplexity(model_probability(X_test, y_test, char_rnn))}
 
 save_model(char_rnn, results, hyperp, model_name)
