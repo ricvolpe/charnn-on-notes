@@ -62,6 +62,28 @@ def beam_generator(model, mapping, seq_length, seed_text, n_chars, k = 5):
 
     return ''.join(output)
 
+def stochastic_beam_generator(model, mapping, seq_length, seed_text, n_chars, k = 5):
+    
+    original_sequence = [mapping[char] for char in seed_text]
+    sequences = [[original_sequence, 0]]
+
+    while len(sequences[0][0]) < n_chars:
+        new_sequences = []
+        for sequence, s_p in sequences:
+            encoded = pad_sequences([sequence], maxlen=seq_length, truncating='pre')
+            encoded = to_categorical(encoded, num_classes=len(mapping))
+            yhat_probs = model.predict(encoded, verbose=0)[0]
+            candidates = [(sequence + [px], s_p + numpy.log(p)) for px, p in enumerate(yhat_probs)]
+            new_sequences.extend(candidates)
+        s_idxs = list(range(len(new_sequences)))
+        s_ps = [numpy.exp(s[1]) for s in new_sequences]
+        s_ps_norm = [s / sum(s_ps)  for s in s_ps]
+        sequences = [new_sequences[rx] for rx in numpy.random.choice(s_idxs, size=k, p=s_ps_norm)]
+    
+    top_sequence = sequences[0][0]
+    output = [c for ix in top_sequence for c, i in mapping.items() if ix == i]
+
+    return ''.join(output)
 
 model_name = 'notes_network_160819_2130'
 sample_len = 1000
@@ -75,31 +97,40 @@ with open(os.path.join(model_path, 'params.json'), 'r') as p_in:
 
 greedy = False
 sampling = False
-beam = True
+beam = False
+sampling_beam = True
 
 if greedy:
-    g_sample = greedy_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len)
+    sample = greedy_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len)
     print('\n', 15 * '-', ' Greedy sample starting here')
-    print(g_sample)
-    g_sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
-    with open(os.path.join(model_path, g_sample_name), 'w') as s_out:
-        s_out.write('Greedy sample: ' + g_sample)
+    print(sample)
+    sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
+    with open(os.path.join(model_path, sample_name), 'w') as s_out:
+        s_out.write('Sampling sample: ' + sample)
 
 if sampling:
-    s_sample = sampling_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len)
+    sample = sampling_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len)
     print('\n', 15 * '-', ' Sampling sample starting here')
-    print(s_sample)
-    s_sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
-    with open(os.path.join(model_path, s_sample_name), 'w') as s_out:
-        s_out.write('Sampling sample: ' + s_sample)
+    print(sample)
+    sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
+    with open(os.path.join(model_path, sample_name), 'w') as s_out:
+        s_out.write('Sampling sample: ' + sample)
 
 if beam:
-    b_sample = beam_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len, 10)
+    sample = beam_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len, 10)
     print('\n', 15 * '-', ' Beam sample starting here')
-    print(b_sample)
-    b_sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
-    with open(os.path.join(model_path, b_sample_name), 'w') as s_out:
-        s_out.write('Sampling sample: ' + b_sample)
+    print(sample)
+    sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
+    with open(os.path.join(model_path, sample_name), 'w') as s_out:
+        s_out.write('Sampling sample: ' + sample)
+
+if sampling_beam:
+    sample = stochastic_beam_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len, 10)
+    print('\n', 15 * '-', ' Beam sample starting here')
+    print(sample)
+    sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
+    with open(os.path.join(model_path, sample_name), 'w') as s_out:
+        s_out.write('Sampling sample: ' + sample)
 
 
 
