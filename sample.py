@@ -41,6 +41,27 @@ def sampling_generator(model, mapping, seq_length, seed_text, n_chars):
         in_text += out_char
     return in_text
 
+def beam_generator(model, mapping, seq_length, seed_text, n_chars, k = 5):
+    
+    original_sequence = [mapping[char] for char in seed_text]
+    sequences = [[original_sequence, 0]]
+
+    while len(sequences[0][0]) < n_chars:
+        new_sequences = []
+        for sequence, nll in sequences:
+            encoded = pad_sequences([sequence], maxlen=seq_length, truncating='pre')
+            encoded = to_categorical(encoded, num_classes=len(mapping))
+            yhat_probs = model.predict(encoded, verbose=0)[0]
+            candidates = [(sequence + [px], nll-numpy.log(p+1e-20)) for px, p in enumerate(yhat_probs)]
+            new_sequences.extend(candidates)
+        new_sequences_by_nll =  sorted(new_sequences, key=lambda tup: tup[1])
+        sequences = new_sequences_by_nll[:k]
+    
+    top_sequence = sequences[0][0]
+    output = [c for ix in top_sequence for c, i in mapping.items() if ix == i]
+
+    return ''.join(output)
+
 
 model_name = 'notes_network_160819_2130'
 sample_len = 1000
@@ -52,8 +73,9 @@ mapping = load(open(os.path.join(model_path,'mapping.pkl'), 'rb'))
 with open(os.path.join(model_path, 'params.json'), 'r') as p_in:
     params = json.load(p_in)
 
-greedy = True
-sampling = True
+greedy = False
+sampling = False
+beam = True
 
 if greedy:
     g_sample = greedy_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len)
@@ -71,6 +93,13 @@ if sampling:
     with open(os.path.join(model_path, s_sample_name), 'w') as s_out:
         s_out.write('Sampling sample: ' + s_sample)
 
+if beam:
+    b_sample = beam_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len, 10)
+    print('\n', 15 * '-', ' Beam sample starting here')
+    print(b_sample)
+    b_sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
+    with open(os.path.join(model_path, b_sample_name), 'w') as s_out:
+        s_out.write('Sampling sample: ' + b_sample)
 
 
 
