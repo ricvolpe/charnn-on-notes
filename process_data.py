@@ -1,4 +1,5 @@
 import os
+import string
 
 def load_doc(filename):
 	with open(filename, 'r') as f_in:
@@ -11,9 +12,12 @@ DATA_CHOICES = {
 	'personal_notes': '/Users/Ric/_personal/_personal_data/mac-notes/all_my_personal_notes.txt'
 }
 
-raw_text = load_doc(DATA_CHOICES['look_alike_test'])
+raw_text = load_doc(DATA_CHOICES['personal_notes'])
 tokens = raw_text.split()
 raw_text = ' '.join(tokens).lower()
+
+vocab_str = ' ' + string.ascii_letters + ''.join([str(x) for x in range(10)]) + string.punctuation
+raw_text = ''.join([x for x in raw_text if x in vocab_str])
 
 length = 100
 sequences = list()
