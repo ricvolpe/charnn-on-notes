@@ -61,10 +61,9 @@ def build_network(params, model_name):
 			print(model.summary())
 	return model
 
-def save_model(model, results, params, name):
+def save_model(results, params, name):
 	if not os.path.isdir(os.path.join('data', name)):
 		os.makedirs(os.path.join('data', name))
-	model.save(os.path.join('data', name, 'model.h5'))
 	pickle.dump(mapping, open(os.path.join('data', name, 'mapping.pkl'), 'wb'))
 	with open(os.path.join('data', name, 'training_history.json'), 'w') as json_out:
 		json.dump(results.history, json_out, indent=2)
@@ -105,4 +104,4 @@ check_pointer = ModelCheckpoint(check_point_path, verbose=1, save_best_only=True
 results = char_rnn.fit(X_train, y_train, epochs=hyperp['epochs'], verbose=1, batch_size=hyperp['batch_size'],
 	validation_data=[X_test, y_test], callbacks=[early_stopper, check_pointer])
 
-save_model(char_rnn, results, hyperp, model_name)
+save_model(results, hyperp, model_name)

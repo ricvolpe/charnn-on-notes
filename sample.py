@@ -85,9 +85,9 @@ def stochastic_beam_generator(model, mapping, seq_length, seed_text, n_chars, k 
 
     return ''.join(output)
 
-model_name = 'test_network_look_alike_220819_1650'
-sample_len = 500
-sample_start = 'how are you today?'
+model_name = 'notes_network_220819_1710'
+sample_len = 100
+sample_start = input('Ask me anything: ').lower()
 
 model_path = os.path.join('data', model_name)
 model = load_model(os.path.join(model_path, 'model.h5'))
@@ -106,7 +106,7 @@ if greedy:
     print(sample)
     sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
     with open(os.path.join(model_path, sample_name), 'w') as s_out:
-        s_out.write('Sampling sample: ' + sample)
+        s_out.write('Greedy sample: ' + sample)
 
 if sampling:
     sample = sampling_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len)
@@ -122,15 +122,15 @@ if beam:
     print(sample)
     sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
     with open(os.path.join(model_path, sample_name), 'w') as s_out:
-        s_out.write('Sampling sample: ' + sample)
+        s_out.write('Beam sample: ' + sample)
 
 if sampling_beam:
     sample = stochastic_beam_generator(model, mapping, params['sequence_lenght'], sample_start, sample_len, 10)
-    print('\n', 15 * '-', ' Beam sample starting here')
+    print('\n', 15 * '-', ' Stochastic Beam sample starting here')
     print(sample)
     sample_name = 'sample_' + str(datetime.datetime.now()).replace(' ','T') + '.txt'
     with open(os.path.join(model_path, sample_name), 'w') as s_out:
-        s_out.write('Sampling sample: ' + sample)
+        s_out.write('Stochastic Beam sample: ' + sample)
 
 
 
